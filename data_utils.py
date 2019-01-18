@@ -56,7 +56,7 @@ def transform_ECG(x, method):
         x = gasf.fit_transform(x)
         print('applying GASF')
     elif method == 'mtf':
-        mtf = MTF(image_size=x.shape[1], n_bins=4, quantiles='empirical', overlapping=False)
+        mtf = MTF(image_size=x.shape[1] // 3, n_bins=4, quantiles='empirical', overlapping=False)
         x = mtf.fit_transform(x)
         print('applying MTF')
     elif method == 'rp':
@@ -75,17 +75,18 @@ def preprocess(x, method):
         x_channels = []
         methods = ['rp', 'gasf', 'mtf']
         for method in methods:
-            single_channel = transform_ECG(x, method)       # (N, 96, 96)
+            single_channel = transform_ECG(x, method)
+            # print(method, single_channel.shape)
             x_channels.append(single_channel)
 
         num_data = len(x_channels[0])
+        ts_len = x.shape[1]
         x_rgb = []
         for i in range(num_data):
-            x_resize = [cv2.resize(x_channels[j][i], (299, 299)).astype(np.float32) for j in range(3)]
-            img = np.stack(x_resize, axis=2)
+            x_resized = [cv2.resize(x_channels[j][i], (ts_len, ts_len)) for j in range(3)]
+            img = np.stack(x_resized, axis=2)
             x_rgb.append(img)
-        x_rgb = np.array(x_rgb)             # (N, 96, 96, 3)
-        print(x_rgb.shape)
+        x_rgb = np.array(x_rgb)
         return x_rgb
 
 
@@ -114,6 +115,8 @@ def main():
     y_val = transform_label(y_val)
     x_test = preprocess(x_test, method)
     y_test = transform_label(y_test)
+
+    print(x_train.shape, x_val.shape, x_test.shape)
 
     root = './data/ECG200/2D/'
     with open(root + 'ECG200_2D_train.pkl', 'wb+') as outfile:

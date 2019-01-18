@@ -5,7 +5,7 @@ from tensorflow.python.keras.initializers import TruncatedNormal
 # from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.python.keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, LearningRateScheduler
 import pickle
-# import matplotlib.pyplot as plt
+import math
 import os
 
 # environment configuration
@@ -33,9 +33,9 @@ def _parse_function(tensors, labels):
 def train_irv2(lr=1e-4, epochs=30):
     x_train, y_train = load_data('train')
     x_val, y_val = load_data('val')
-    # x_test, y_test = load_data('test')
-    print('training set: ', x_train.shape)
-    print('validation set: ', x_val.shape)
+    x_test, y_test = load_data('test')
+    print('training set before resizing: ', x_train.shape)
+    print('validation set vefore resizing: ', x_val.shape)
 
     batch_size = 32
     train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
@@ -51,16 +51,17 @@ def train_irv2(lr=1e-4, epochs=30):
     print('building model...')
     base_model = InceptionResNetV2(include_top=False, weights='imagenet', pooling='avg')
 
-    x = base_model.output       # a vector after GlobalAveragePooling2D()
-    d1 = layers.Dropout(0.5)(x)
-    fc1 = layers.Dense(1024, kernel_initializer=TruncatedNormal(),
-                       kernel_regularizer=regularizers.l2(0.05), name='clf_fc1')(d1)
+    # top classifier
+    x = base_model.output       # a vector after GlobalAveragePooling2D(), shape: (?, 1536)
+    d1 = layers.Dropout(0.9)(x)
+    fc1 = layers.Dense(4, kernel_initializer=TruncatedNormal(),
+                       kernel_regularizer=regularizers.l2(0.2), name='clf_fc1')(d1)
     bn1 = layers.BatchNormalization()(fc1)
     act1 = layers.Activation('relu', name='act_fc1')(bn1)
 
     # d2 = layers.Dropout(0.3)(act1)
     fc2 = layers.Dense(2, kernel_initializer=TruncatedNormal(),
-                       kernel_regularizer=regularizers.l2(0.05), name='clf_fc2')(act1)
+                       kernel_regularizer=regularizers.l2(0.2), name='clf_fc2')(act1)
     bn2 = layers.BatchNormalization()(fc2)
     predictions = layers.Activation('sigmoid', name='prediction')(bn2)
 
@@ -84,23 +85,23 @@ def train_irv2(lr=1e-4, epochs=30):
                               batch_size=batch_size)
     print('start training...')
     histoty = model.fit(train_dataset,
-                        steps_per_epoch=len(x_train)//batch_size,
+                        steps_per_epoch=math.ceil(len(x_train)//batch_size),
                         epochs=epochs,
                         validation_data=val_dataset,
-                        validation_steps=3,
+                        validation_steps=math.ceil(len(x_val)//batch_size),
                         callbacks=[checkpointer, reduce_lr, tensorboard],
                         verbose=2)
 
     # # Testing
-    # [loss, acc] = model.evaluate(x_test, y_test, batch_size=len(y_test))
-    # print('TEST loss: ', loss,)
-    # print('TEST accuracy: ', acc)
+    [loss, acc] = model.evaluate(x_test, y_test, batch_size=len(y_test))
+    print('TEST loss: ', loss,)
+    print('TEST accuracy: ', acc)
     return histoty
 
 
 hists = train_irv2(lr=1e-4, epochs=40)
+# get 0.6875 val_acc at most, which is not good
 
-
-
+# TODO: Fine-tune VGG16
 
 
