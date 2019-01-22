@@ -1,5 +1,5 @@
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
 import pickle
 import math
 
@@ -14,10 +14,6 @@ def load_data(dataset='train'):
     return x, y
 
 
-# x_val, y_val = load_data('test')
-# print(x_val.shape)
-# print(y_val.shape)
-
-aa = [[1,2,3], [2,3,4], [5,6,7]]
-print([aa[i][0] for i in range(3)])
+fea = np.load('./fea_vector/irv2_ECG200_0.66.npy')
+print(fea.shape)
 
