@@ -12,9 +12,8 @@ def evaluate_model(weight_name):
     x_test = _parse_function(x_test, im_size=224)
     dataset_test = get_dataset(x_test, y_test, batch_size, resize=False)
 
-    model = tf.keras.models.load_model('./weight/' + weight_name, compile=False)
-    adam = tf.keras.optimizers.Adam(lr=1e-4)
-    model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
+    model = tf.keras.models.load_model('./weight/' + weight_name, compile=True)
+    # because evaluate() will calculate loss and metrics['accuracy'], so recompiling the loaded model is necessary
 
     [loss, acc] = model.evaluate(dataset_test, steps=math.ceil(num_data / batch_size))
 
