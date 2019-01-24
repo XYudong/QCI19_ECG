@@ -14,6 +14,17 @@ def load_data(dataset='train'):
     return x, y
 
 
-fea = np.load('./fea_vector/irv2_ECG200_0.66.npy')
-print(fea.shape)
+# fea = np.load('./fea_vector/irv2_ECG200_0.66.npy')
+# print(fea.shape)
+
+def test_fn(*args):
+    out = []
+    for arg in args:
+        out.append(arg+1)
+
+    return out
+
+
+[a, b, c] = test_fn(1,2,4)
+print(a)
 
