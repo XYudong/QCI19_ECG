@@ -2,10 +2,10 @@ from data_utils import get_data, get_dataset, _parse_function, img_standardizati
 import tensorflow as tf
 from tensorflow.python.keras.applications.vgg16 import VGG16
 from tensorflow.python.keras import layers, regularizers
-from tensorflow.python.keras.initializers import TruncatedNormal
+from tensorflow.python.keras.initializers import TruncatedNormal, VarianceScaling
 # from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, LearningRateScheduler
-import numpy as np
+# import numpy as np
 # import pickle
 import math
 import os
@@ -28,7 +28,7 @@ def new_vgg16():
     flat = layers.Flatten(name='flatten')(model.layers[-1].output)
 
     fc_1 = layers.Dense(128, name='fc_1',
-                        # kernel_initializer=TruncatedNormal(),
+                        kernel_initializer=VarianceScaling(),
                         kernel_regularizer=regularizers.l2(0.01))(flat)
     bn_1 = layers.BatchNormalization()(fc_1)  # normalize the inputs of nonlinear layer(activation layer)
     act_1 = layers.Activation('relu')(bn_1)
@@ -41,6 +41,7 @@ def new_vgg16():
     # act_2 = layers.Activation('relu')(bn_2)
 
     fc_3 = layers.Dense(2, name='fc_3',
+                        kernel_initializer=VarianceScaling(),
                         kernel_regularizer=regularizers.l2(0.01))(d_1)
     # prediction = Activation("softmax", name="softmax")(bn_3)
     prediction = layers.Activation("sigmoid", name="sigmoid")(fc_3)  # for binary classification
@@ -81,10 +82,9 @@ def train_vgg16(lr=1e-4, epochs=50):
     model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
     # callbacks
-    checkpointer = ModelCheckpoint('./weight/vgg16_ECG200_{val_acc:.2f}.h5',
+    checkpointer = ModelCheckpoint('./weight/vgg16_ECG200_03.h5',
                                    monitor='val_loss',
-                                   save_best_only=True,
-                                   )
+                                   save_best_only=True)
     # reduce_lr = LearningRateScheduler(lr_scheduler)
     reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.5,
                                   patience=3,

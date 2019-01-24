@@ -25,4 +25,4 @@ def evaluate_model(weight_name):
 
 
 if __name__ == '__main__':
-    evaluate_model('vgg16_ECG200_0.87.h5')
+    evaluate_model('vgg16_ECG200_03.h5')

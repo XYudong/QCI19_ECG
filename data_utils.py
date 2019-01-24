@@ -2,7 +2,6 @@ from pyts.image import GASF, MTF, RecurrencePlots
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow.python.keras.utils import to_categorical
-import matplotlib.pyplot as plt
 import numpy as np
 from cv2 import resize as cv_resize
 
@@ -49,20 +48,21 @@ def data_label_split(filename):
     return xs, labels
 
 
-def white_noise_augmentation_new(x, y, times=10):
+def white_noise_augmentation_new(x, y, sigma, times=10):
     # times = int(times)
     # augmentation of 1D data sequence
     if len(x.shape) == 1:
         x = np.reshape(x, (1, -1))
 
-    mu, sigma = 0, 0.1
-    rows = int((times-1)/2)
+    mu = 0
+    # rows = int((times-1)/2)
+    rows = times-1
     noises1 = np.random.normal(mu, sigma, (int(x.shape[0] * rows), x.shape[1]))
-    noises2 = np.random.normal(mu, 3*sigma, (int(x.shape[0] * (rows+1)), x.shape[1]))
+    # noises2 = np.random.normal(mu, 3*sigma, (int(x.shape[0] * (rows+1)), x.shape[1]))
 
     x1 = np.repeat(x, rows, axis=0) + noises1
-    x2 = np.repeat(x, rows+1, axis=0) + noises2
-    x = np.concatenate((x, x1, x2), axis=0)
+    # x2 = np.repeat(x, rows, axis=0) + noises1
+    x = np.concatenate((x, x1), axis=0)
 
     y = np.repeat(y, times)
     print('after augmentation', x.shape, y.shape)
@@ -133,37 +133,6 @@ def transform_label(y):
     return Y
 
 
-def separate_classes(x, y):
-    """separate different classes into different arrays"""
-    normal_class = x[[i for i in range(len(y)) if y[i] == 1]]
-    abnormal_class = x[[i for i in range(len(y)) if y[i] == -1]]
-    return normal_class, abnormal_class
-
-
-def plot_signal(x1, x2, num=10):
-    if len(x1.shape) == 1:
-        x1 = np.vstack((x1, x1))
-    idx1 = np.random.choice(len(x1), num if num < len(x1) else len(x1), replace=False)
-    idx2 = np.random.choice(len(x2), num if num < len(x2) else len(x2), replace=False)
-    x1_new = x1[idx1]
-    x2_new = x2[idx2]
-
-    f1 = plt.figure(figsize=(8, 8))
-    plt.subplot(2, 1, 1)
-    plt.ylim(-3, 5)
-    for signal in x1_new:
-        plt.plot(signal)
-    plt.title('Normal in ECG200')
-    plt.text(8, 3, 'without augmentation')
-
-    plt.subplot(2, 1, 2)
-    plt.ylim(-3, 5)
-    for signal in x2_new:
-        plt.plot(signal)
-    plt.title('Abnormal in ECG200')
-    # plt.text(8, 3, 'with augmentation')
-
-
 def split_ECG(path='./data/ECG200/', filename='ECG200_TRAIN.txt'):
     """split ECG dataset into different different portions"""
     x_train = np.loadtxt(path + filename, delimiter=',')
@@ -194,6 +163,7 @@ def get_data(aug, name):
     method = 'comb'
     x, y = load_ECG(name)
     if aug:
+        # x, y = white_noise_augmentation_new(x, y, sigma=0.128, times=10)
         x, y = white_noise_augmentation(x, y, times=3)
 
     print('transforming ECG to images...')

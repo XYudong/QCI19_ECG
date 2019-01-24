@@ -3,3 +3,5 @@ data/*
 weight/*
 log/*
 fea_vector/*
+figure/*
+__pycache__/*
