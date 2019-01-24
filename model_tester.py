@@ -4,7 +4,7 @@ import math
 
 
 def evaluate_model(weight_name):
-    batch_size = 16
+    batch_size = 10
     x_train, y_train = get_data(aug=True, name='train')
     x_test, y_test = get_data(aug=False, name='test')
     num_data = len(x_test)

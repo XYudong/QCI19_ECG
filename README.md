@@ -2,7 +2,7 @@
 Fine-tuning VGG16 and Inception-Resnet V2 to classify ECG signals in two different classes, basically normal and abnormal.
 
 ## Data
-1. 100 original TRAIN data, 100 original TEST data. Here is some samples from TRAIN set:
+1. 100 original TRAIN data, and 100 original TEST data. Here is some samples from TRAIN set:
 ![ECG samples](pics/signal.png)
 2. Split TRAIN into 90 *train* set and 10 *val*(validation) set;
 3. Augment *train* and *val* sets:
@@ -25,4 +25,4 @@ Fine-tuning VGG16 and Inception-Resnet V2 to classify ECG signals in two differe
 
 * Evaluate TEST set:
 
-![test_result](pics/TEST_result.png)
+![test_result](pics/TEST_results.png)
